@@ -1,0 +1,28 @@
+jenkins:
+  systemMessage: "A Jenkins instance, but at what cost"
+  remotingSecurity:
+    enabled: true
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: ${ROLE_ADMIN_NAME}
+            description: ${ROLE_ADMIN_DESCRIPTION}
+            permissions:
+              - "Overall/Administer"
+            assignments:
+              - ${USER_ADMIN_ID}
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: ${USER_ADMIN_ID}
+         name: ${USER_ADMIN_NAME}
+         password: ${USER_ADMIN_PASSWORD}
+
+jobs: # dsl doc: http://127.0.0.1:4242/plugin/job-dsl/api-viewer/index.html
+  - file: ./job_dsl.groovy
+
+security:
+  globalJobDslSecurityConfiguration:
+    useScriptSecurity: false

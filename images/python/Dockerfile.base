@@ -1,0 +1,3 @@
+FROM python:3.10
+ONBUILD COPY . .
+CMD ["bash", "-c", "python -m app.py"]

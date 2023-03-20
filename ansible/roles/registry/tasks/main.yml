@@ -1,0 +1,33 @@
+
+  - name: Copy docker registry
+    ansible.builtin.copy:
+      src: ../../../../registry
+      dest: /opt
+      directory_mode: true
+  
+  - name: Update registry configuration
+    ansible.builtin.template:
+      src: ../../../templates/registry.env
+      dest: /opt/registry/.env
+      owner: root
+      group: root
+      mode: '0600'
+    register: registryenv
+
+  - name: Set registry password
+    ansible.builtin.shell:
+      cmd: "/opt/tools/create_htpasswd.sh {{ docker_registry_user }} {{ docker_registry_password }}"
+      creates: "/opt/registry/creds/htpasswd"
+
+  - name: Prepare to restart Registry
+    community.docker.docker_compose:
+      project_src: /opt/registry
+      state: absent
+    when: registryenv.changed
+
+  - name: Create and start Registry
+    community.docker.docker_compose:
+      project_src: /opt/registry
+      state: present
+
+    

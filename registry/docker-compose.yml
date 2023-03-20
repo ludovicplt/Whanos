@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+    - "${DOCKER_REGISTRY_PORT}:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+    env_file:
+      - .env
+    volumes:
+      - registry-data:/data
+      - ./certs:/certs
+      - ./creds:/httpasswd_storage
+
+volumes:
+  registry-data:

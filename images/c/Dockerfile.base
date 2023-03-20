@@ -1,0 +1,7 @@
+FROM gcc:11.2
+RUN apt-get update && apt-get install -y \
+    make
+WORKDIR /app
+ONBUILD COPY . .
+ONBUILD RUN make
+CMD ["bash", "-c", "./compiled-app"]

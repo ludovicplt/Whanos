@@ -1,0 +1,64 @@
+
+  - name: Copy jenkins
+    ansible.builtin.copy:
+      src: ../../../../jenkins
+      dest: /opt
+      directory_mode: true
+  
+  - name: Update jenkins configuration
+    ansible.builtin.template:
+      src: ../../../templates/jenkins.env
+      dest: /opt/jenkins/.env
+      owner: root
+      group: root
+      mode: '0600'
+    register: jenkinsenv
+  
+  - name: Copy docker images
+    ansible.builtin.copy:
+      src: ../../../../images
+      mode: '0644'
+      dest: /opt
+      directory_mode: true
+
+  - name: registering languages list
+    find:
+      paths: /opt/images
+      patterns: "*"
+      recurse: no
+      file_type: directory
+    register: languagedirs
+
+  - name: create jobdsl
+    vars:
+      languagedirs: "{{ languagedirs }}"
+    ansible.builtin.template:
+      src: ../../../templates/job_dsl.groovy
+      dest: /opt/jenkins
+
+  #- name: Create an empty kubeconfig.yml, if it doesnt exist already
+  #  file:
+  #    path: /opt/jenkins/kubeconfig.yml
+  #    state: touch
+  #  when: 'not "../../../kubeconfig.yml" is file'
+
+  - name: Copy kubeconfig.yml
+    ansible.builtin.copy:
+      src: ../../../kubeconfig.yml
+      mode: '0644'
+      dest: /opt/jenkins/kubeconfig.yml
+      directory_mode: false
+    #when: '"../../../kubeconfig.yml" is file'
+
+  - copy: content="{{ docker_registry_password }}" dest=/opt/jenkins/.registry.txt mode=600
+  
+  - name: Prepare to restart Jenkins
+    community.docker.docker_compose:
+      project_src: /opt/jenkins
+      state: absent
+    when: jenkinsenv.changed
+
+  - name: Create and start Jenkins services
+    community.docker.docker_compose:
+      project_src: /opt/jenkins
+      state: present

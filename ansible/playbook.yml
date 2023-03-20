@@ -1,0 +1,35 @@
+- name: apply common configuration to all nodes
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/vault
+  roles:
+    - base
+
+- name: apply registry configuration
+  hosts: registry
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/vault
+  roles:
+    - registry
+
+- name: apply jenkins configuration
+  hosts: jenkins
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/vault
+  roles:
+    - jenkins
+
+- name: apply registry login
+  hosts: jenkins
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/vault
+  roles:
+    - registry_login
